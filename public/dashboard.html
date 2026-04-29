@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+text-align:center;
+padding-top:100px;
+}
+
+.container{
+background:white;
+display:inline-block;
+padding:40px;
+border-radius:10px;
+box-shadow:0 10px 20px rgba(0,0,0,0.2);
+}
+
+input{
+padding:10px;
+width:200px;
+margin:10px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+button{
+padding:10px 20px;
+margin:10px;
+background:#2874f0;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Dashboard</h2>
+
+<button onclick="create()">Create Meeting</button>
+
+<br><br>
+
+<input id="room" placeholder="Meeting ID">
+
+<button onclick="join()">Join</button>
+
+</div>
+
+<script>
+
+async function create(){
+
+const res=await fetch("/create-room")
+const data=await res.json()
+
+location.href="meeting.html?room="+data.room
+
+}
+
+function join(){
+
+location.href="meeting.html?room="+room.value
+
+}
+
+</script>
+
+</body>
+</html>

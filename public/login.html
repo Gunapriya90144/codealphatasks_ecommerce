@@ -1,0 +1,86 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.container{
+background:white;
+padding:40px;
+border-radius:10px;
+box-shadow:0 10px 20px rgba(0,0,0,0.2);
+text-align:center;
+}
+
+input{
+width:250px;
+padding:10px;
+margin:10px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+button{
+padding:10px 20px;
+background:#2874f0;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Login</h2>
+
+<input id="email" placeholder="Email"><br>
+
+<input id="password" placeholder="Password"><br>
+
+<button onclick="login()">Login</button>
+
+</div>
+
+<script>
+
+async function login(){
+
+const res=await fetch("/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+email:email.value,
+password:password.value
+})
+})
+
+const data=await res.json()
+
+if(data.message){
+location.href="dashboard.html"
+}else{
+alert("Login failed")
+}
+
+}
+
+</script>
+
+</body>
+</html>
