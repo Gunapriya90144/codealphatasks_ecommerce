@@ -1,0 +1,301 @@
+ <!DOCTYPE html>
+<html>
+<head>
+
+<title>SmartShop</title>
+
+<style>
+
+body{
+font-family: Arial;
+margin:0;
+background:#f1f3f6;
+}
+
+header{
+background:#2874f0;
+color:white;
+padding:15px;
+font-size:24px;
+}
+
+.search{
+margin:20px;
+}
+
+input{
+padding:10px;
+width:300px;
+}
+
+button{
+padding:10px;
+background:#2874f0;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.products{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:10px;
+text-align:center;
+border-radius:5px;
+box-shadow:0 0 5px gray;
+}
+
+.card img{
+width:150px;
+height:150px;
+object-fit:cover;
+}
+
+.admin{
+background:white;
+padding:20px;
+margin:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+SmartShop
+</header>
+
+<div class="search">
+
+<input type="text" id="searchText" placeholder="Search product">
+<button onclick="search()">Search</button>
+
+</div>
+
+<div class="products" id="products"></div>
+
+<hr>
+
+<!-- ADMIN LOGIN -->
+
+<div class="admin">
+
+<h2>Admin Login</h2>
+
+<input id="adminEmail" placeholder="email"><br><br>
+<input id="adminPassword" placeholder="password"><br><br>
+
+<button onclick="adminLogin()">Login</button>
+
+</div>
+
+<!-- ADD PRODUCT -->
+
+<div class="admin" id="addProduct" style="display:none">
+
+<h2>Add Product</h2>
+
+<input id="name" placeholder="Product Name"><br><br>
+<input id="price" placeholder="Price"><br><br>
+<input id="image" placeholder="Image URL"><br><br>
+<input id="desc" placeholder="Description"><br><br>
+
+<button onclick="addProduct()">Add Product</button>
+
+</div>
+
+<hr>
+
+<!-- USER REGISTER -->
+
+<h2>User Register</h2>
+
+<input id="regName" placeholder="Name"><br><br>
+<input id="regEmail" placeholder="Email"><br><br>
+<input id="regPass" placeholder="Password"><br><br>
+
+<button onclick="register()">Register</button>
+
+<hr>
+
+<!-- USER LOGIN -->
+
+<h2>User Login</h2>
+
+<input id="loginEmail" placeholder="Email"><br><br>
+<input id="loginPass" placeholder="Password"><br><br>
+
+<button onclick="userLogin()">Login</button>
+
+<script>
+
+async function loadProducts(){
+
+const res = await fetch("/products");
+
+const data = await res.json();
+
+display(data);
+
+}
+
+function display(data){
+
+const container = document.getElementById("products");
+
+container.innerHTML="";
+
+data.forEach(p=>{
+
+container.innerHTML+=`
+
+<div class="card">
+
+<img src="${p.image}">
+
+<h3>${p.name}</h3>
+
+<p>₹${p.price}</p>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* SEARCH */
+
+async function search(){
+
+const q = document.getElementById("searchText").value;
+
+const res = await fetch("/search?q="+q);
+
+const data = await res.json();
+
+display(data);
+
+}
+
+/* ADMIN LOGIN */
+
+async function adminLogin(){
+
+const email = document.getElementById("adminEmail").value;
+
+const password = document.getElementById("adminPassword").value;
+
+const res = await fetch("/admin-login",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({email,password})
+
+});
+
+const data = await res.json();
+
+if(data.success){
+
+alert("Admin Login Success");
+
+document.getElementById("addProduct").style.display="block";
+
+}else{
+
+alert("Wrong admin login");
+
+}
+
+}
+
+/* USER REGISTER */
+
+async function register(){
+
+const name=document.getElementById("regName").value;
+const email=document.getElementById("regEmail").value;
+const password=document.getElementById("regPass").value;
+
+await fetch("/register",{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name,email,password})
+
+});
+
+alert("Registered successfully");
+
+}
+
+/* USER LOGIN */
+
+async function userLogin(){
+
+const email=document.getElementById("loginEmail").value;
+const password=document.getElementById("loginPass").value;
+
+const res=await fetch("/login",{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email,password})
+
+});
+
+const data=await res.json();
+
+if(data.success){
+
+alert("Login successful");
+
+}else{
+
+alert("Invalid login");
+
+}
+
+}
+
+/* ADD PRODUCT */
+
+async function addProduct(){
+
+const name = document.getElementById("name").value;
+const price = document.getElementById("price").value;
+const image = document.getElementById("image").value;
+const description = document.getElementById("desc").value;
+
+await fetch("/add-product",{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name,price,image,description})
+
+});
+
+alert("Product Added");
+
+loadProducts();
+
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>SmartShop</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#f1f3f6;
+}
+
+header{
+background:#2874f0;
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+}
+
+.search input{
+padding:8px;
+width:250px;
+}
+
+button{
+padding:8px;
+background:#2874f0;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.products{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:10px;
+border-radius:5px;
+text-align:center;
+box-shadow:0 0 5px gray;
+}
+
+.card img{
+width:150px;
+height:150px;
+object-fit:cover;
+}
+
+.cart{
+position:fixed;
+right:0;
+top:0;
+width:300px;
+height:100%;
+background:white;
+padding:20px;
+box-shadow:-2px 0 5px gray;
+overflow:auto;
+}
+
+.hidden{
+display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div>SmartShop</div>
+
+<div class="search">
+
+<input id="searchText" placeholder="Search product">
+<button onclick="search()">Search</button>
+
+</div>
+
+<button onclick="toggleCart()">Cart</button>
+
+</header>
+
+<div class="products" id="products"></div>
+
+<div class="cart hidden" id="cart">
+
+<h2>Your Cart</h2>
+
+<div id="cartItems"></div>
+
+<h3 id="total"></h3>
+
+<button onclick="checkout()">Checkout</button>
+
+</div>
+
+<hr>
+
+<h2>Admin Login</h2>
+
+<input id="email" placeholder="email">
+<input id="password" placeholder="password">
+<button onclick="login()">Login</button>
+
+<div id="adminPanel" class="hidden">
+
+<h2>Add Product</h2>
+
+<input id="name" placeholder="Name"><br><br>
+<input id="price" placeholder="Price"><br><br>
+<input id="image" placeholder="Image URL"><br><br>
+<input id="desc" placeholder="Description"><br><br>
+
+<button onclick="addProduct()">Add Product</button>
+
+</div>
+
+<script>
+
+let cart=[];
+
+/* LOAD PRODUCTS */
+
+async function loadProducts(){
+
+const res=await fetch("/products");
+
+const data=await res.json();
+
+display(data);
+
+}
+
+function display(data){
+
+const container=document.getElementById("products");
+
+container.innerHTML="";
+
+data.forEach(p=>{
+
+container.innerHTML+=`
+
+<div class="card">
+
+<img src="${p.image}">
+
+<h3>${p.name}</h3>
+
+<p>₹${p.price}</p>
+
+<button onclick="addToCart('${p.name}',${p.price})">Add To Cart</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* SEARCH */
+
+async function search(){
+
+const q=document.getElementById("searchText").value;
+
+const res=await fetch("/search?q="+q);
+
+const data=await res.json();
+
+display(data);
+
+}
+
+/* CART */
+
+function addToCart(name,price){
+
+cart.push({name,price});
+
+alert("Added to cart");
+
+}
+
+function toggleCart(){
+
+document.getElementById("cart").classList.toggle("hidden");
+
+loadCart();
+
+}
+
+function loadCart(){
+
+let div=document.getElementById("cartItems");
+
+div.innerHTML="";
+
+let total=0;
+
+cart.forEach((item,i)=>{
+
+total+=item.price;
+
+div.innerHTML+=`
+
+<p>${item.name} - ₹${item.price}</p>
+
+`;
+
+});
+
+document.getElementById("total").innerText="Total ₹"+total;
+
+}
+
+async function checkout(){
+
+let total=0;
+
+cart.forEach(i=>total+=i.price);
+
+await fetch("/order",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({items:cart,total})
+
+});
+
+alert("Order placed");
+
+cart=[];
+
+toggleCart();
+
+}
+
+/* ADMIN LOGIN */
+
+async function login(){
+
+const email=document.getElementById("email").value;
+
+const password=document.getElementById("password").value;
+
+const res=await fetch("/admin-login",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({email,password})
+
+});
+
+const data=await res.json();
+
+if(data.success){
+
+alert("Admin Login Success");
+
+document.getElementById("adminPanel").classList.remove("hidden");
+
+}else{
+
+alert("Wrong login");
+
+}
+
+}
+
+/* ADD PRODUCT */
+
+async function addProduct(){
+
+const name=document.getElementById("name").value;
+
+const price=document.getElementById("price").value;
+
+const image=document.getElementById("image").value;
+
+const description=document.getElementById("desc").value;
+
+await fetch("/add-product",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({name,price,image,description})
+
+});
+
+alert("Product Added");
+
+loadProducts();
+
+}
+
+loadProducts();
+
+</script>
+
+</body>
+
+</html>
