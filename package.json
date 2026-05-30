@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "ecommerce-store",
   "version": "1.0.0",
   "description": "",
@@ -6,15 +7,33 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
+=======
+  "name": "video-meeting",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+>>>>>>> e6a106c312800e2def6a7e18736214f6dc92adf1
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+<<<<<<< HEAD
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "mongoose": "^9.5.0"
+=======
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.0",
+    "multer": "^2.1.1",
+    "socket.io": "^4.8.3",
+    "uuid": "^14.0.0"
+>>>>>>> e6a106c312800e2def6a7e18736214f6dc92adf1
   }
 }

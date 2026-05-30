@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Meeting Room</title>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+margin:0;
+background:#f4f6fb;
+}
+
+h2{
+background:#4a6cf7;
+color:white;
+padding:15px;
+margin:0;
+}
+
+#videos{
+display:flex;
+flex-wrap:wrap;
+padding:15px;
+}
+
+#videos video{
+width:250px;
+margin:10px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+button{
+padding:10px 15px;
+margin:10px;
+border:none;
+border-radius:6px;
+background:#4a6cf7;
+color:white;
+font-size:14px;
+cursor:pointer;
+}
+
+button:hover{
+background:#324ac0;
+}
+
+input[type="file"]{
+margin:10px;
+}
+
+#chat{
+position:fixed;
+right:0;
+top:0;
+width:260px;
+height:100%;
+background:white;
+border-left:2px solid #ddd;
+padding:10px;
+box-shadow:-2px 0 10px rgba(0,0,0,0.1);
+}
+
+#chat input{
+width:150px;
+padding:8px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+#messages{
+margin-top:10px;
+font-size:14px;
+}
+
+#messages p{
+background:#f1f1f1;
+padding:6px;
+border-radius:5px;
+margin:5px 0;
+}
+
+.whiteboard{
+margin:15px;
+}
+
+canvas{
+border:2px solid #4a6cf7;
+border-radius:8px;
+background:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Meeting Room</h2>
+
+<div id="videos"></div>
+
+<button onclick="share()">Screen Share</button>
+
+<input type="file" id="file">
+<button onclick="upload()">Upload</button>
+
+<!-- CHAT PANEL -->
+
+<div id="chat">
+
+<input id="msg" placeholder="message">
+<button onclick="send()">Send</button>
+
+<div id="messages"></div>
+
+</div>
+
+<!-- WHITEBOARD -->
+
+<div class="whiteboard">
+
+<h3>Whiteboard</h3>
+
+<button onclick="enablePen()">Pen</button>
+<button onclick="enableEraser()">Eraser</button>
+<button onclick="clearBoard()">Clear</button>
+
+<br><br>
+
+<canvas id="board" width="500" height="300"></canvas>
+
+</div>
+
+<script>
+
+const socket = io()
+
+const room = new URLSearchParams(location.search).get("room")
+
+socket.emit("join-room",room,"user")
+
+const videos = document.getElementById("videos")
+const canvas = document.getElementById("board")
+const ctx = canvas.getContext("2d")
+
+let drawing = false
+let erase = false
+
+/* VIDEO */
+
+const video = document.createElement("video")
+
+navigator.mediaDevices.getUserMedia({video:true,audio:true})
+.then(stream=>{
+
+video.srcObject = stream
+video.play()
+
+videos.append(video)
+
+})
+
+/* CHAT */
+
+function send(){
+
+socket.emit("chat-message",msg.value)
+msg.value=""
+
+}
+
+socket.on("chat-message",m=>{
+
+messages.innerHTML += "<p>"+m+"</p>"
+
+})
+
+/* SCREEN SHARE */
+
+async function share(){
+
+const screen = await navigator.mediaDevices.getDisplayMedia({video:true})
+
+const v = document.createElement("video")
+
+v.srcObject = screen
+v.play()
+
+videos.append(v)
+
+}
+
+/* FILE UPLOAD */
+
+async function upload(){
+
+const data = new FormData()
+
+data.append("file",file.files[0])
+
+await fetch("/upload",{method:"POST",body:data})
+
+alert("File uploaded")
+
+}
+
+/* WHITEBOARD */
+
+canvas.onmousedown = (e)=>{
+
+drawing = true
+ctx.beginPath()
+ctx.moveTo(e.offsetX,e.offsetY)
+
+}
+
+canvas.onmouseup = ()=>{
+
+drawing = false
+
+}
+
+canvas.onmousemove = (e)=>{
+
+if(!drawing) return
+
+ctx.lineWidth = erase ? 20 : 2
+ctx.strokeStyle = erase ? "white" : "black"
+
+ctx.lineTo(e.offsetX,e.offsetY)
+ctx.stroke()
+
+socket.emit("drawing",{x:e.offsetX,y:e.offsetY})
+
+}
+
+socket.on("drawing",(data)=>{
+
+ctx.lineTo(data.x,data.y)
+ctx.stroke()
+
+})
+
+function clearBoard(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+}
+
+function enableEraser(){
+
+erase = true
+
+}
+
+function enablePen(){
+
+erase = false
+
+}
+
+</script>
+
+</body>
+</html>
